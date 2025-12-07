@@ -2,6 +2,7 @@ import { useContext, useState, useEffect } from "react";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 import Stats from "../components/Stats";
+import Spinner from "../components/Spinner";
 
 const Dashboard = () => {
   const { user } = useContext(AuthContext);
@@ -12,6 +13,7 @@ const Dashboard = () => {
   const [type, setType] = useState(""); // income/expense
   const [date, setDate] = useState("");
   const [expenses, setExpenses] = useState(null); // holds API data
+  const [loading,setLoading] = useState(true)
 
   const token = localStorage.getItem("token");
 
@@ -22,23 +24,26 @@ const Dashboard = () => {
 
   const fetchExpenses = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/expenses", {
+      const res = await axios.get("https://smart-expenses-tracker.onrender.com/api/expenses", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setExpenses(res.data);
+      
     } catch (err) {
       console.error("Error fetching expenses:", err.response?.data || err);
       setExpenses([]);
     }
+    setLoading(false)
   };
 
   const handleSubmit = async (e) => {
+    
     e.preventDefault();
     if (!amount || !description || !category || !type || !date) return;
 
     try {
       const payload = { amount: Number(amount), description, category, type, date };
-      await axios.post("http://localhost:5000/api/expenses", payload, {
+      await axios.post("https://smart-expenses-tracker.onrender.com/api/expenses", payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
       // Reset form
@@ -50,9 +55,11 @@ const Dashboard = () => {
 
       // Refresh stats after adding
       fetchExpenses();
+      
     } catch (err) {
       console.error("Error adding expense:", err.response?.data || err);
     }
+   
   };
 
   if (!user) {
@@ -71,8 +78,10 @@ const Dashboard = () => {
     <div className="p-6 min-h-screen bg-gray-100 flex flex-col lg:flex-row gap-6 pt-20">
       {/* Left: Stats */}
       <div className="lg:w-2/3 bg-white shadow-lg rounded-xl p-6">
-        {expenses === null ? (
-          <p>Loading stats...</p>
+        {loading ? (
+            
+          <Spinner/>
+          
         ) : (
           <Stats expenses={expenses} />
         )}

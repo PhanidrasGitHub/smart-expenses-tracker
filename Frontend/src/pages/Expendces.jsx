@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import Spinner from "../components/Spinner";
 
 const Expenses = () => {
   const navigate = useNavigate();
@@ -12,19 +13,22 @@ const Expenses = () => {
   const [month, setMonth] = useState("");
   const [sortByAmount, setSortByAmount] = useState(false);
   const [search, setSearch] = useState("");
-
+  const [loading,setLoading] = useState(true)
+ const [keyword, setKeyword] = useState("");
   const token = localStorage.getItem("token");
 
   useEffect(() => {
     fetchExpenses();
     fetchSummary();
     fetchStats();
+    setLoading(false)
   }, [category, month, sortByAmount]);
 
   // FETCH EXPENSES
-  const fetchExpenses = async (keyword) => {
+  const fetchExpenses = async () =>{
+    
     try {
-      let url = "http://localhost:5000/api/expenses";
+      let url = "https://smart-expenses-tracker.onrender.com/api/expenses";
 
       if (keyword) url += `/search?keyword=${encodeURIComponent(keyword)}`;
       else if (sortByAmount) url += "/sort?by=amount";
@@ -42,12 +46,13 @@ const Expenses = () => {
     } catch (err) {
       console.error("Error loading expenses", err.response?.data || err);
     }
+   
   };
 
   // FETCH SUMMARY
   const fetchSummary = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/expenses/summary", {
+      const res = await axios.get("https://smart-expenses-tracker.onrender.com/api/expenses/summary", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSummary(res.data);
@@ -59,7 +64,7 @@ const Expenses = () => {
   // FETCH STATISTICS
   const fetchStats = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/expenses/statistics", {
+      const res = await axios.get("https://smart-expenses-tracker.onrender.com/api/expenses/statistics", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setStats(res.data);
@@ -73,7 +78,7 @@ const Expenses = () => {
     e.stopPropagation();
     if (!window.confirm("Delete this expense?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/expenses/${id}`, {
+      await axios.delete(`https://smart-expenses-tracker.onrender.com/api/expenses/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setExpenses(expenses.filter((e) => e._id !== id));
@@ -88,7 +93,7 @@ const Expenses = () => {
   const handleDeleteAll = async () => {
     if (!window.confirm("Delete ALL expenses? This cannot be undone.")) return;
     try {
-      await axios.delete("http://localhost:5000/api/expenses", {
+      await axios.delete("https://smart-expenses-tracker.onrender.com/api/expenses", {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchExpenses();
@@ -217,8 +222,8 @@ const Expenses = () => {
             Delete All
           </button>
 
-          {expenses.length === 0 ? (
-            <p className="text-gray-500 mt-4">No expenses found.</p>
+          {loading ? (
+            <Spinner/>
           ) : (
             expenses.map((item) => (
               <div
@@ -257,6 +262,7 @@ const Expenses = () => {
             ))
           )}
         </div>
+        
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import Spinner from "../components/Spinner";
 
 const EditExpense = () => {
   const { id } = useParams();
@@ -21,7 +22,7 @@ const EditExpense = () => {
   useEffect(() => {
     const fetchExpense = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/expenses/${id}`, {
+        const res = await axios.get(`https://smart-expenses-tracker.onrender.com/api/expenses/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setExpense({
@@ -48,7 +49,7 @@ const EditExpense = () => {
     e.preventDefault();
     try {
       await axios.put(
-        `http://localhost:5000/api/expenses/${id}`,
+        `https://smart-expenses-tracker.onrender.com/api/expenses/${id}`,
         {
           ...expense,
           amount: Number(expense.amount),
@@ -63,10 +64,10 @@ const EditExpense = () => {
     }
   };
 
-  if (loading) return <p className="p-6">Loading expense details...</p>;
+  if (loading) return <Spinner/>;
 
   return (
-    <div className="flex justify-center p-6">
+    <div className="flex justify-center p-6 pt-20">
       <form
         className="w-full max-w-md bg-white p-6 rounded-lg shadow space-y-4"
         onSubmit={handleSubmit}
